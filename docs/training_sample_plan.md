@@ -150,6 +150,97 @@ abs(position_i - position_j) <= k
 cooccur_count(node_i, node_j) += 1
 ```
 
+同时应该记录该节点对出现在多少条不同历史查询路径中：
+
+```text
+cooccur_queries(node_i, node_j).add(query_id)
+query_count(node_i, node_j) = len(cooccur_queries(node_i, node_j))
+```
+
+这样可以区分两类情况：
+
+```text
+偶然在一条路径里近距离共现
+在多条不同 OD 最短路里反复近距离共现
+```
+
+后者是更强的历史负载相似性信号。
+
+### 高度相关样本
+
+如果一对节点在多条不同最短路中反复出现在同一个滑动窗口内，就可以构造为高度相关样本，也可以称为强正样本。
+
+推荐规则：
+
+```text
+strong_positive:
+  query_count >= 3
+  cooccur_count >= 5
+
+weak_positive:
+  query_count >= 1
+  cooccur_count >= 1
+```
+
+其中：
+
+```text
+cooccur_count = 节点对在所有路径窗口中的累计共现次数
+query_count = 节点对出现在多少条不同 OD 查询路径中
+```
+
+例如：
+
+```text
+节点 A 和节点 B 在 6 条不同查询路径中都在窗口 k 内共现，
+并且累计共现 12 次，
+则它们比只共现 1 次的节点对更应该被拉近。
+```
+
+这种样本可以直接用于对比学习或节点对二分类任务。
+
+### 样本权重
+
+简单权重：
+
+```text
+weight = cooccur_count
+```
+
+更稳的权重：
+
+```text
+weight = log(1 + cooccur_count)
+```
+
+如果希望同时考虑共现次数和跨查询稳定性：
+
+```text
+weight = log(1 + cooccur_count) * log(1 + query_count)
+```
+
+还可以加入窗口距离衰减。两个节点越近，贡献越大：
+
+```text
+contribution = 1 / window_distance
+```
+
+例如：
+
+```text
+相邻节点 distance = 1，贡献 1
+间隔 2 个位置 distance = 2，贡献 0.5
+间隔 3 个位置 distance = 3，贡献 0.333
+```
+
+最终：
+
+```text
+weight(node_i, node_j) += 1 / window_distance
+```
+
+这种方式能让真正连续经过的节点对获得更高权重，而不是让窗口边缘节点和相邻节点拥有完全相同的重要性。
+
 ### 负样本
 
 基础负样本：
@@ -169,16 +260,21 @@ cooccur_count(node_i, node_j) += 1
 ### 输出示例
 
 ```csv
-node_i,node_j,label,weight,source
-100,105,1,23,path_window
-200,315,0,0,random_negative
-500,501,0,0,hard_negative
+node_i,node_j,label,strength,weight,cooccur_count,query_count,source
+100,105,1,strong,3.58,12,6,path_window
+200,210,1,weak,0.69,1,1,path_window
+300,900,0,negative,1.0,0,0,random_negative
+500,501,0,negative,1.0,0,0,hard_negative
 ```
 
 其中：
 
 ```text
-weight = 共现次数
+label = 1 表示正样本，0 表示负样本
+strength = strong / weak / negative
+weight = 训练权重，可以由 cooccur_count 和 query_count 计算
+cooccur_count = 路径窗口累计共现次数
+query_count = 出现过该共现关系的不同查询数量
 source = path_window / random_negative / hard_negative
 ```
 
@@ -193,6 +289,7 @@ source = path_window / random_negative / hard_negative
 
 - 需要先恢复历史路径
 - 高频路径可能产生大量重复样本，需要计数或采样
+- 需要设置 `window_size`、`strong_positive` 阈值和权重函数
 
 ## 方案三：边级路径样本
 
@@ -385,12 +482,14 @@ Jaccard(A, B) 很低或为 0 的节点对
 ```text
 1. 对 queries_train.csv 跑 Dijkstra，恢复路径节点序列
 2. 保存历史路径文件 paths_train.csv
-3. 基于路径窗口构造正样本
-4. 构造随机负样本
-5. 加入拓扑近但历史不共现的困难负样本
-6. 统计 node_pass_count 和 edge_pass_count 作为节点/边特征
-7. 在路径窗口共现基础上尝试 PPMI 加权
-8. 最后再考虑 OD 服务集合与 Jaccard 相似度
+3. 基于路径窗口统计 cooccur_count 和 query_count
+4. 将多路径重复窗口共现的节点对标为 strong_positive
+5. 将少量窗口共现的节点对标为 weak_positive
+6. 构造随机负样本
+7. 加入拓扑近但历史不共现的困难负样本
+8. 统计 node_pass_count 和 edge_pass_count 作为节点/边特征
+9. 在路径窗口共现基础上尝试 PPMI 加权
+10. 最后再考虑 OD 服务集合与 Jaccard 相似度
 ```
 
 ## 第一版建议输出文件
@@ -429,10 +528,11 @@ src,dst,weight,pass_count
 ### node_pair_samples.csv
 
 ```csv
-node_i,node_j,label,weight,source
-100,105,1,23,path_window
-200,315,0,0,random_negative
-500,501,0,0,hard_negative
+node_i,node_j,label,strength,weight,cooccur_count,query_count,source
+100,105,1,strong,3.58,12,6,path_window
+200,210,1,weak,0.69,1,1,path_window
+300,900,0,negative,1.0,0,0,random_negative
+500,501,0,negative,1.0,0,0,hard_negative
 ```
 
 ## 当前最推荐方案
@@ -440,7 +540,7 @@ node_i,node_j,label,weight,source
 第一版优先实现：
 
 ```text
-历史最短路径窗口共现正样本
+历史最短路径窗口共现正样本，区分 strong / weak
 + 随机负样本
 + 困难负样本
 ```
