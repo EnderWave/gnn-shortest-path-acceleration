@@ -1,5 +1,7 @@
 .venv/
+.venv-linux/
 venv/
 env/
 __pycache__/
 *.pyc
+data/compressed/porto/
