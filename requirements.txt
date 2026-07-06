@@ -1,0 +1,12 @@
+# Porto data processing and visualization dependencies
+#
+# Install:
+# python3 -m venv .venv-linux
+# .venv-linux/bin/python -m pip install -r requirements.txt
+
+matplotlib==3.11.0
+numpy==2.5.1
+osmium==4.3.1
+osmnx==2.1.0
+geopandas==1.1.4
+pyproj==3.7.2
