@@ -6,7 +6,7 @@ import csv
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Mapping
 
 from .graph_types import Query, WeightedDiGraph
 from .shortest_path import ShortestPathResult
@@ -34,6 +34,8 @@ def evaluate_method(
     method_name: str,
     method: QueryMethod,
     reference: QueryMethod | None = None,
+    reference_distances: Mapping[int, float] | None = None,
+    progress_interval: int = 0,
     tolerance: float = 1e-6,
 ) -> tuple[MethodSummary, list[dict[str, str]]]:
     rows: list[dict[str, str]] = []
@@ -42,10 +44,15 @@ def evaluate_method(
     reachable_count = 0
     correct_count = 0
 
-    for query in queries:
+    for index, query in enumerate(queries, start=1):
         result = method(graph, query.origin, query.destination)
-        reference_result = result if reference is None else reference(graph, query.origin, query.destination)
-        correct = _same_distance(result.distance, reference_result.distance, tolerance)
+        if reference_distances is not None:
+            reference_distance = reference_distances[query.query_id]
+        elif reference is not None:
+            reference_distance = reference(graph, query.origin, query.destination).distance
+        else:
+            reference_distance = result.distance
+        correct = _same_distance(result.distance, reference_distance, tolerance)
 
         reachable_count += int(result.reachable)
         correct_count += int(correct)
@@ -64,6 +71,8 @@ def evaluate_method(
                 "correct": str(correct),
             }
         )
+        if progress_interval > 0 and index % progress_interval == 0:
+            print(f"{method_name}: evaluated {index:,}/{len(queries):,} queries", flush=True)
 
     query_count = len(queries)
     summary = MethodSummary(
@@ -145,4 +154,3 @@ def _percentile(values: list[float], percentile: float) -> float:
         return ordered[lower]
     fraction = index - lower
     return ordered[lower] * (1 - fraction) + ordered[upper] * fraction
-

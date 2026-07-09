@@ -45,18 +45,18 @@ extract。
 数据准备完成后，可以运行 Dijkstra 和双向 Dijkstra baseline：
 
 ```bash
-.venv/bin/python scripts/run_baselines.py --limit 1000
+.venv/bin/python scripts/run_baselines.py
 ```
 
 默认读取 `data/processed/porto/` 下的道路节点、道路边和 200 米吸附阈值内的
 可用 OD 查询。输出结果位于：
 
-- `results/baselines/porto_1000queries_summary.csv`
-- `results/baselines/porto_1000queries_details.csv`
+- `results/baselines/porto_allqueries_summary.csv`
+- `results/baselines/porto_allqueries_details.csv`
 
-当前 1000 条 Porto OD 查询 baseline 结果：
+当前 98,082 条 Porto 可用 OD 查询全量 baseline 结果：
 
 | 方法 | 可达查询 | 平均耗时 ms | p95 耗时 ms | 平均展开节点 | 正确率 |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Dijkstra | 997/1000 | 24.932 | 110.011 | 31213.50 | 1.000000 |
-| 双向 Dijkstra | 997/1000 | 13.144 | 62.315 | 14622.64 | 1.000000 |
+| Dijkstra | 97009/98082 | 17.976 | 92.645 | 24831.37 | 1.000000 |
+| 双向 Dijkstra | 97009/98082 | 8.339 | 37.341 | 10741.70 | 1.000000 |

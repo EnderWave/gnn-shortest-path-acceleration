@@ -27,8 +27,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--node-csv", type=Path, default=DEFAULT_NODE_CSV)
     parser.add_argument("--edge-csv", type=Path, default=DEFAULT_EDGE_CSV)
     parser.add_argument("--query-csv", type=Path, default=DEFAULT_QUERY_CSV)
-    parser.add_argument("--limit", type=int, default=100, help="Number of usable OD queries to evaluate.")
+    parser.add_argument("--limit", type=int, default=None, help="Number of usable OD queries to evaluate. Omit for all.")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--progress-interval", type=int, default=5000)
     return parser.parse_args()
 
 
@@ -56,22 +57,28 @@ def main() -> None:
         "dijkstra",
         dijkstra_distance,
         reference=None,
+        progress_interval=args.progress_interval,
     )
     summaries.append(dijkstra_summary)
     all_rows.extend(dijkstra_rows)
+    reference_distances = {
+        int(row["query_id"]): float("inf") if row["distance_m"] == "inf" else float(row["distance_m"])
+        for row in dijkstra_rows
+    }
 
     bidirectional_summary, bidirectional_rows = evaluate_method(
         graph,
         queries,
         "bidirectional_dijkstra",
         bidirectional_dijkstra_distance,
-        reference=dijkstra_distance,
+        reference_distances=reference_distances,
+        progress_interval=args.progress_interval,
     )
     summaries.append(bidirectional_summary)
     all_rows.extend(bidirectional_rows)
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    suffix = f"porto_{len(queries)}queries"
+    suffix = "porto_allqueries" if args.limit is None else f"porto_{len(queries)}queries"
     summary_path = args.output_dir / f"{suffix}_summary.csv"
     detail_path = args.output_dir / f"{suffix}_details.csv"
     write_summary(summary_path, summaries)
