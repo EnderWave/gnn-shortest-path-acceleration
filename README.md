@@ -39,3 +39,24 @@ python scripts/prepare_porto_data.py --skip-road-plot
 完整数据准备预计占用数 GB 磁盘空间。数据来源包括 UCI Taxi Service
 Trajectory Prediction Challenge, ECML PKDD 2015 和 Geofabrik Portugal OSM
 extract。
+
+## 运行最短路 baseline
+
+数据准备完成后，可以运行 Dijkstra 和双向 Dijkstra baseline：
+
+```bash
+.venv/bin/python scripts/run_baselines.py --limit 1000
+```
+
+默认读取 `data/processed/porto/` 下的道路节点、道路边和 200 米吸附阈值内的
+可用 OD 查询。输出结果位于：
+
+- `results/baselines/porto_1000queries_summary.csv`
+- `results/baselines/porto_1000queries_details.csv`
+
+当前 1000 条 Porto OD 查询 baseline 结果：
+
+| 方法 | 可达查询 | 平均耗时 ms | p95 耗时 ms | 平均展开节点 | 正确率 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Dijkstra | 997/1000 | 24.932 | 110.011 | 31213.50 | 1.000000 |
+| 双向 Dijkstra | 997/1000 | 13.144 | 62.315 | 14622.64 | 1.000000 |
