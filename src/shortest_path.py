@@ -52,8 +52,10 @@ def bidirectional_dijkstra_distance(
     graph: WeightedDiGraph,
     source: NodeId,
     target: NodeId,
+    *,
+    _start_time: float | None = None,
 ) -> ShortestPathResult:
-    start = time.perf_counter()
+    start = time.perf_counter() if _start_time is None else _start_time
     if not graph.has_node(source) or not graph.has_node(target):
         return ShortestPathResult(math.inf, 0, _elapsed_ms(start), False)
     if source == target:
@@ -106,4 +108,3 @@ def bidirectional_dijkstra_distance(
 
 def _elapsed_ms(start: float) -> float:
     return (time.perf_counter() - start) * 1000.0
-

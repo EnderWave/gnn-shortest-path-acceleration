@@ -1,0 +1,3 @@
+method,query_count,region_count,region_size,shortcut_count,storage_cost_estimate,build_seconds,baseline_avg_ms,indexed_avg_ms,elapsed_change_pct,baseline_p95_ms,indexed_p95_ms,baseline_avg_expanded,indexed_avg_expanded,expanded_change_pct,correctness_rate
+random_bfs,5000,115,512,48235,102596,0.569756,14.232919,18.389826,29.206287,63.246891,81.568188,11564.045000,11564.055000,0.000086,1.000000
+od_hotspot_bfs,5000,89,512,40579,86230,0.450556,14.232919,18.469132,29.763490,63.246891,84.206284,11564.045000,11564.053200,0.000071,1.000000

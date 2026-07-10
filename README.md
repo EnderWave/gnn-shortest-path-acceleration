@@ -60,3 +60,25 @@ extract。
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Dijkstra | 97009/98082 | 17.976 | 92.645 | 24831.37 | 1.000000 |
 | 双向 Dijkstra | 97009/98082 | 8.339 | 37.341 | 10741.70 | 1.000000 |
+
+## 运行物化压缩图实验
+
+离线构建随机区域和 OD 热点区域的压缩图，并运行普通全量实验：
+
+```bash
+python scripts/run_region_experiments.py --region-count 200 --region-size 512
+```
+
+最终性能结论应使用配对验证。它会在同一工作进程中连续执行每条 OD 的基线与
+压缩查询，并交替执行顺序，减少机器负载和缓存差异对计时的影响：
+
+```bash
+python scripts/verify_materialized_queries.py --region-count 200 --region-size 512
+```
+
+两个脚本默认使用全部 CPU 核心并运行全部 98,082 条可用 OD。区域生成、shortcut
+计算和压缩图构建均属于离线预处理，不计入在线查询耗时。最终结果位于：
+
+- `results/regions/porto_98082queries_r200_s512_paired_summary.csv`
+- `results/regions/porto_98082queries_r200_s512_paired_details.csv`
+- `results/regions/porto_98082queries_r200_s512_paired_final_report.md`

@@ -1,0 +1,3 @@
+method,query_count,region_count,shortcut_count,compressed_node_count,compressed_edge_count,fallback_query_count,fallback_rate_pct,preprocessing_seconds,baseline_avg_ms,indexed_avg_ms,elapsed_change_pct,baseline_p95_ms,indexed_p95_ms,p95_change_pct,baseline_avg_expanded,indexed_avg_expanded,expanded_change_pct,faster_query_rate_pct,median_delta_ms,correctness_rate
+random_bfs,98082,115,48235,78249,174050,72381,73.796415,44.080464,27.377655,25.885260,-5.451143,121.399885,115.361355,-4.974082,10741.695153,9766.547919,-9.078150,59.057727,-0.086861,1.000000
+od_hotspot_bfs,98082,108,48967,81710,181257,77599,79.116454,8.886402,28.122007,27.234854,-3.154656,124.382252,121.808647,-2.069110,10741.695153,10142.908607,-5.574414,55.661589,-0.053662,1.000000
