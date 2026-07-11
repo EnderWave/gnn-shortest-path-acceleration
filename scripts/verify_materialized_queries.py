@@ -174,12 +174,16 @@ def evaluate_paired(
     method: str,
     workers: int,
     chunk_size: int,
+    collect_details: bool = True,
 ) -> tuple[dict[str, list], list[dict[str, str]]]:
     chunks = list(_chunked(queries, max(1, chunk_size)))
     results = []
     if workers <= 1:
         _init_worker(graph, index)
-        results = [_evaluate_pair_chunk(method, chunk) for chunk in chunks]
+        results = [
+            _evaluate_pair_chunk(method, chunk, collect_details)
+            for chunk in chunks
+        ]
     else:
         with ProcessPoolExecutor(
             max_workers=workers,
@@ -187,7 +191,10 @@ def evaluate_paired(
             initargs=(graph, index),
             mp_context=_process_context(),
         ) as pool:
-            futures = [pool.submit(_evaluate_pair_chunk, method, chunk) for chunk in chunks]
+            futures = [
+                pool.submit(_evaluate_pair_chunk, method, chunk, collect_details)
+                for chunk in chunks
+            ]
             for done, future in enumerate(as_completed(futures), start=1):
                 results.append(future.result())
                 if done == len(futures) or done % 10 == 0:
@@ -215,7 +222,7 @@ def _init_worker(graph, index: CompressionIndex) -> None:
     _WORKER_INDEX = index
 
 
-def _evaluate_pair_chunk(method: str, queries) -> dict[str, list]:
+def _evaluate_pair_chunk(method: str, queries, collect_details: bool = True) -> dict[str, list]:
     if _WORKER_GRAPH is None or _WORKER_INDEX is None:
         raise RuntimeError("worker was not initialized")
 
@@ -254,26 +261,27 @@ def _evaluate_pair_chunk(method: str, queries) -> dict[str, list]:
         output["baseline_expanded"].append(baseline.expanded_nodes)
         output["indexed_expanded"].append(indexed.expanded_nodes)
         output["correct_values"].append(int(correct))
-        output["details"].append(
-            {
-                "method": method,
-                "query_id": str(query.query_id),
-                "origin": str(query.origin),
-                "destination": str(query.destination),
-                "query_graph": (
-                    "original"
-                    if _WORKER_INDEX.requires_original_graph(query.origin, query.destination)
-                    else "compressed"
-                ),
-                "execution_order": order,
-                "baseline_ms": f"{baseline.elapsed_ms:.6f}",
-                "indexed_ms": f"{indexed.elapsed_ms:.6f}",
-                "delta_ms": f"{delta:.6f}",
-                "baseline_expanded": str(baseline.expanded_nodes),
-                "indexed_expanded": str(indexed.expanded_nodes),
-                "correct": str(correct),
-            }
-        )
+        if collect_details:
+            output["details"].append(
+                {
+                    "method": method,
+                    "query_id": str(query.query_id),
+                    "origin": str(query.origin),
+                    "destination": str(query.destination),
+                    "query_graph": (
+                        "original"
+                        if _WORKER_INDEX.requires_original_graph(query.origin, query.destination)
+                        else "compressed"
+                    ),
+                    "execution_order": order,
+                    "baseline_ms": f"{baseline.elapsed_ms:.6f}",
+                    "indexed_ms": f"{indexed.elapsed_ms:.6f}",
+                    "delta_ms": f"{delta:.6f}",
+                    "baseline_expanded": str(baseline.expanded_nodes),
+                    "indexed_expanded": str(indexed.expanded_nodes),
+                    "correct": str(correct),
+                }
+            )
     return output
 
 

@@ -33,7 +33,7 @@ GNN 位于第 4 步。它不替代 Dijkstra，而是根据道路拓扑和历史 
 | --- | --- | --- |
 | 1. 数据与评测框架 | 已完成 | 构建 Porto 道路图和 98,082 条可用 OD；实现 Dijkstra、双向 Dijkstra、逐查询明细和正确性评测。 |
 | 2. 传统压缩与物化查询 | 已完成 | 实现随机、OD 热点区域；离线构建节点三态表、shortcut 和压缩图；全量配对实验正确率 100%，在线耗时下降。 |
-| 3. 参数与预算扫描 | 未完成 | 需要扫描区域数量、区域大小、随机种子和 shortcut 预算，得到 Pareto 前沿。 |
+| 3. 参数与预算扫描 | 脚本已完成，待全量运行 | 已实现可断点续跑的控制变量实验脚本；需要其他研究者完成长时间运行，再根据结果确定推荐参数和公平预算。 |
 | 4. GNN 区域价值模型 | 未开始 | 需要实现节点特征、需求场传播、候选区域评分、无路径监督训练目标和预算选择。 |
 | 5. 最终对比实验 | 未开始 | 需要在相同预算下比较 GNN、随机区域和 OD 热点区域，并完成消融、稳定性和跨城市实验。 |
 
@@ -133,3 +133,46 @@ python scripts/verify_materialized_queries.py --region-count 200 --region-size 5
 - `results/regions/porto_98082queries_r200_s512_paired_summary.csv`
 - `results/regions/porto_98082queries_r200_s512_paired_details.csv`
 - `results/regions/porto_98082queries_r200_s512_paired_final_report.md`
+
+## 运行参数与预算扫描
+
+正式扫描采用控制变量法：固定区域大小为 `512`，依次测试区域数量
+`50、100、200、400`；再固定区域数量为 `200`，依次测试区域大小
+`128、256、512、1024`。随机区域每组运行 5 个随机种子，OD 热点区域每组运行
+一次，共 42 组。每组都使用全部 98,082 条 OD，并在同一进程内配对执行基线和
+压缩查询。
+
+先查看计划执行的配置，不会启动实验：
+
+```bash
+python scripts/run_parameter_scan.py --dry-run
+```
+
+确认后运行正式扫描：
+
+```bash
+python scripts/run_parameter_scan.py
+```
+
+Windows 上也可以运行：
+
+```powershell
+py scripts\run_parameter_scan.py
+```
+
+脚本默认使用全部 CPU 核心，预计需要数小时，具体时间取决于机器。每完成一组就会
+立即把结果写入：
+
+- `results/parameter_scan/porto_parameter_scan.csv`
+
+如果运行中断，重新执行同一条命令即可继续，已经写入 CSV 的配置会被自动跳过。
+只有确定要清空已有进度并从头运行时才使用：
+
+```bash
+python scripts/run_parameter_scan.py --restart
+```
+
+CSV 包含每组配置的实际区域数、shortcut 数、压缩图规模、回退率、预处理时间、
+平均与 P95 在线耗时、展开节点变化、查询加速比例和正确率。全量运行完成后保留该
+CSV，由本项目维护者负责汇总随机种子的均值和波动、比较控制变量结果、筛选有效
+配置，并给出参数与预算扫描阶段的最终结论。
