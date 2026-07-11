@@ -1,4 +1,4 @@
-"""Shortcut index construction for connected regions."""
+"""为连通区域构建 shortcut 压缩索引。"""
 
 from __future__ import annotations
 

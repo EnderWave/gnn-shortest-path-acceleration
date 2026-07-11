@@ -1,4 +1,4 @@
-"""Draw Porto OD heatmaps on top of roads extracted from local OSM PBF."""
+"""在本地 OSM PBF 路网底图上绘制波尔图 OD 热力图。"""
 
 from __future__ import annotations
 

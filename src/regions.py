@@ -1,4 +1,4 @@
-"""Connected region generation for shortcut-index experiments."""
+"""为 shortcut 索引实验生成连通区域。"""
 
 from __future__ import annotations
 

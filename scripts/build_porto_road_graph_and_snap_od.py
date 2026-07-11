@@ -1,4 +1,4 @@
-"""Extract a Porto road graph from OSM PBF and snap OD points to road nodes."""
+"""从 OSM PBF 中抽取波尔图路网，并将 OD 坐标吸附到道路节点。"""
 
 from __future__ import annotations
 

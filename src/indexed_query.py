@@ -1,4 +1,4 @@
-"""Query a fully materialized compressed graph with an exact fallback."""
+"""查询完全物化的压缩图，并在必要时精确回退到原图。"""
 
 from __future__ import annotations
 

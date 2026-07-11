@@ -1,4 +1,4 @@
-"""Run first-pass connected-region shortcut experiments on Porto."""
+"""在波尔图路网上运行第一轮连通区域 shortcut 实验。"""
 
 from __future__ import annotations
 

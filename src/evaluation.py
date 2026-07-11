@@ -1,4 +1,4 @@
-"""Shared evaluation helpers for exact shortest-path baselines."""
+"""精确最短路基线共用的评测工具。"""
 
 from __future__ import annotations
 

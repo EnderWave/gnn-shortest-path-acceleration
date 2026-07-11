@@ -1,4 +1,4 @@
-"""Load Porto road graph CSV files."""
+"""加载波尔图道路图 CSV 文件。"""
 
 from __future__ import annotations
 
@@ -38,4 +38,3 @@ def summarize_graph(graph: WeightedDiGraph) -> GraphSummary:
         min_weight=min(weights, default=0.0),
         max_weight=max(weights, default=0.0),
     )
-
