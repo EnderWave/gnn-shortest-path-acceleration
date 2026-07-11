@@ -91,6 +91,103 @@ python scripts/prepare_porto_data.py --skip-road-plot
 Trajectory Prediction Challenge, ECML PKDD 2015 和 Geofabrik Portugal OSM
 extract。
 
+### 手动准备数据
+
+如果一键脚本运行失败，按下面四步操作即可。所有命令都需要在仓库根目录执行。
+
+#### 1. 下载数据
+
+##### 最新数据
+
+以下链接指向官方数据源，适合重新获取最新的原始数据：
+
+1. [最新数据：UCI Porto taxi 数据集（ZIP）](https://archive.ics.uci.edu/static/public/339/taxi%2Bservice%2Btrajectory%2Bprediction%2Bchallenge%2Becml%2Bpkdd%2B2015.zip)
+2. [最新数据：Geofabrik Portugal 路网（OSM PBF）](https://download.geofabrik.de/europe/portugal-latest.osm.pbf)
+
+##### 实验版本数据
+
+为了准确复现仓库中已有实验，本项目实际使用的数据保存在 Google Drive：
+
+- [实验版本：`uci_porto_taxi.zip`（Google Drive）](https://drive.google.com/file/d/1aCHdkVaQ9IhW82zhA7c_267j0MDNgN2y/view?usp=drive_link)
+- [实验版本：`portugal-latest.osm.pbf`（Google Drive）](https://drive.google.com/file/d/150c-FUbCGe_AArNQtVzxJEEBSKJtNpMb/view?usp=drive_link)
+
+实验版本数据是生成当前 `processed` CSV 和已有结果时使用的固定版本。Google Drive
+文件可访问时，优先使用该版本复现实验；只有需要基于最新路网重新生成数据时，才
+使用上面的官方“最新数据”链接。
+
+使用官方最新数据时，第一个文件是 ZIP 压缩包，下载后重命名为
+`uci_porto_taxi.zip`。打开它，从中找到并取出 `train.csv.zip`，但不要继续解压
+`train.csv.zip`。第二个文件应保持 PBF 格式，文件名必须是
+`portugal-latest.osm.pbf`。
+
+#### 2. 按固定名称放置文件
+
+在项目中创建 `data/compressed/porto/`，最终目录必须是：
+
+```text
+data/compressed/porto/
+├── uci_porto_taxi.zip          # UCI 下载得到的外层 ZIP
+├── train.csv.zip               # 从 UCI 外层 ZIP 中取出的内层 ZIP
+└── portugal-latest.osm.pbf     # Geofabrik 下载得到的 PBF
+```
+
+脚本会直接读取 `train.csv.zip` 内部的 `train.csv`，所以不要把它解压为 1.9 GB 左右的
+CSV 文件。文件名和路径必须完全一致。
+
+#### 3. 配置 Python 环境
+
+建议使用 Python 3.11 或更新版本。
+
+Windows（PowerShell）：
+
+```powershell
+py --version
+py -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Linux / macOS（Bash）：
+
+```bash
+python3 --version
+python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+如果 Debian / Ubuntu 提示缺少 `venv`，先运行
+`sudo apt install python3-venv`，然后重新创建虚拟环境。
+
+#### 4. 运行数据处理脚本
+
+Windows（PowerShell）：
+
+```powershell
+.\.venv\Scripts\python.exe scripts\generate_porto_od_heatmap.py --limit 100000
+.\.venv\Scripts\python.exe scripts\build_porto_road_graph_and_snap_od.py
+```
+
+Linux / macOS（Bash）：
+
+```bash
+.venv/bin/python scripts/generate_porto_od_heatmap.py --limit 100000
+.venv/bin/python scripts/build_porto_road_graph_and_snap_od.py
+```
+
+第一条命令从出租车数据中提取 10 万条 OD，第二条命令从 PBF 中抽取 Porto 路网并
+将 OD 吸附到道路节点。处理完成后，研究所需的主要文件是：
+
+```text
+data/processed/porto/波尔图道路节点.csv
+data/processed/porto/波尔图道路边.csv
+data/processed/porto/波尔图可用起终点节点查询_200米.csv
+```
+
+如果这三个 CSV 已经存在，可以跳过原始数据下载和处理，只配置 Python 环境后直接
+运行实验。标准结果约为 133,839 个路网节点、221,589 条有向边和 98,082 条可用 OD；
+由于 Geofabrik 的 `latest` 路网持续更新，不同下载日期的数量可能略有变化。
+
 ## 运行最短路 baseline
 
 数据准备完成后，可以运行 Dijkstra 和双向 Dijkstra baseline：
