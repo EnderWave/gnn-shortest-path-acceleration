@@ -1,4 +1,4 @@
-"""Small graph data structures for shortest-path baselines."""
+"""最短路基线使用的轻量图数据结构。"""
 
 from __future__ import annotations
 
@@ -63,4 +63,3 @@ class GraphSummary:
     average_out_degree: float
     min_weight: float
     max_weight: float
-

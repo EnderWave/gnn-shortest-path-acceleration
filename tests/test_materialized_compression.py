@@ -1,3 +1,5 @@
+"""验证物化压缩索引的节点状态、正确性与回退行为。"""
+
 from __future__ import annotations
 
 import unittest

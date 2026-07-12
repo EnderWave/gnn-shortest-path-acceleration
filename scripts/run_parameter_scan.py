@@ -1,4 +1,4 @@
-"""Run resumable controlled-variable experiments for region compression."""
+"""运行支持断点续跑的区域压缩控制变量实验。"""
 
 from __future__ import annotations
 

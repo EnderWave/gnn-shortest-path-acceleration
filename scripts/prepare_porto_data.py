@@ -1,4 +1,4 @@
-"""Prepare Porto OD and OSM road-network data in one cross-platform command."""
+"""通过跨平台的一键流程准备波尔图 OD 与 OSM 路网数据。"""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Extract Porto taxi OD samples and draw simple lon/lat heatmaps."""
+"""抽取波尔图出租车 OD 样本，并绘制经纬度热力图。"""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Load OD query workloads."""
+"""加载 OD 查询负载。"""
 
 from __future__ import annotations
 
@@ -24,4 +24,3 @@ def load_porto_queries(query_csv: Path, limit: int | None = None) -> list[Query]
             if limit is not None and len(queries) >= limit:
                 break
     return queries
-

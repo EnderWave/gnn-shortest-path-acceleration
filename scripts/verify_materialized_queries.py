@@ -1,4 +1,4 @@
-"""Paired full-workload verification for materialized compression graphs."""
+"""对物化压缩图进行全量负载配对验证。"""
 
 from __future__ import annotations
 
