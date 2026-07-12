@@ -1,3 +1,0 @@
-method,query_count,reachable_count,unreachable_count,avg_elapsed_ms,p50_elapsed_ms,p95_elapsed_ms,avg_expanded_nodes,correctness_rate
-dijkstra,98082,97009,1073,67.563551,29.446250,311.561480,24831.37,1.000000
-bidirectional_dijkstra,98082,97009,1073,29.664245,11.638500,131.380845,10741.70,1.000000
